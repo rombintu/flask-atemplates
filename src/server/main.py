@@ -33,6 +33,8 @@ def upload():
     author = request.form['author']
     file = request.files['file']
 
+    if title == "":
+        return redirect(url_for('index'))
     engine = create_engine('sqlite:///db.sqlite')
     Session = sessionmaker(bind=engine)
     session = Session()

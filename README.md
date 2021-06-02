@@ -6,6 +6,7 @@ cd flask-atemplates
 cp .env.bak .env
 python3 -m poetry install
 python3 src/server/model.py  
+mkdir -p src/server/static/downloads 
 flask run
 ```
 ## Необходимое ПО
