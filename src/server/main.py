@@ -1,23 +1,20 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from model import Templates
+from flask import Blueprint, render_template, request, redirect, flash, url_for
+from flask_login import login_required, current_user
 
-from flask import Flask, render_template, request, redirect, url_for
+from .model import Templates, Users
+from .config import DATABASE, UPLOAD_FOLDER
+from .checksign import check
 import os
 
-UPLOAD_FOLDER = os.getcwd() + '/src/server/static/downloads'
+main = Blueprint('main', __name__)
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = 'insert-your-secret'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-
-@app.route('/')
+@login_required
+@main.route('/')
 def index():
-    engine = create_engine('sqlite:///db.sqlite')
+    engine = create_engine(DATABASE)
     Session = sessionmaker(bind=engine)
     session = Session()
     templates = session.query(Templates).all()
@@ -25,24 +22,35 @@ def index():
     return render_template('index.html', templates=templates)
 
 
-@app.route('/upload', methods=['POST'])
+@main.route('/upload', methods=['POST'])
 def upload():
     title = request.form['title']
     path = f'{title}.html'
     desc = request.form['desc']
-    author = request.form['author']
-    file = request.files['file']
 
-    if title == "":
-        return redirect(url_for('index'))
-    engine = create_engine('sqlite:///db.sqlite')
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    new_template = Templates(title, path, desc, author)
-    session.add(new_template)
-    session.commit()
-    session.close()
-    
-    file.save(os.path.join(app.config['UPLOAD_FOLDER'], path))
+    mainfile = request.files['mainfile']
+    keyfile = request.files['keyfile']
+    signfile = request.files['signfile']
 
-    return redirect(url_for('index'))
+    if title == "" or not mainfile or not keyfile or not signfile:
+        flash('Нужно заполнить все поля')
+        return redirect(url_for('main.index'))
+
+    # Проверка ЭЦП
+    if check(mainfile.stream.read(), keyfile.stream.read(), signfile.stream.read()):
+        flash('Подпись проверена')
+
+        engine = create_engine(DATABASE)
+        Session = sessionmaker(bind=engine)
+        session = Session()
+        new_template = Templates(title, path, desc, current_user.email)
+        session.add(new_template)
+        session.commit()
+        session.close()
+        
+        mainfile.save(os.path.join(UPLOAD_FOLDER, path))
+        return redirect(url_for('main.index'))
+    else:
+        flash('Подпись не верна')
+        return redirect(url_for('main.index'))
+

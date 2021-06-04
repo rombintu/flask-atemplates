@@ -2,6 +2,8 @@ from sqlalchemy import create_engine, Column, Integer, String, DateTime, Foreign
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+from flask_login import UserMixin
+
 import json
 
 DeclarativeBase = declarative_base()
@@ -21,6 +23,13 @@ class Templates(DeclarativeBase):
         self.desc = desc
         self.author = author
 
+
+class Users(UserMixin, DeclarativeBase):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True)
+    email = Column(String(100), unique=True)
+    password = Column(String(100))
 
 if __name__ == '__main__':
     engine = create_engine('sqlite:///db.sqlite')

@@ -24,17 +24,33 @@
     <h3>Ничего не найдено</h3>
 {% endif %}
 <br>
+{% if current_user.is_authenticated %}
 <form action="/upload" method="POST" enctype="multipart/form-data">
         <h3>Добавить свой шаблон</h3>
         <br>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="alert alert-primary" role="alert">
+                {{ messages[0] }}
+            </div>
+        {% endif %}
+        {% endwith %}
         <div class="input-group mb-3">
             <input type="text" class="form-control" name="title" placeholder="Название" aria-label="Recipient's username" aria-describedby="basic-addon2">
-            <input type="text" class="form-control" name="desc" placeholder="Описание" aria-label="Recipient's username" aria-describedby="basic-addon2">
-            <input type="text" class="form-control" name="author" placeholder="Автор" aria-label="Recipient's username" aria-describedby="basic-addon2">
+            <input type="text" class="form-control" name="desc" placeholder="Описание" aria-label="Recipient's username" aria-describedby="basic-addon2" style="width: 70%;">
         </div>
-        <div class="input-group">
-            <input type="file" class="form-control" name="file" id="inputGroupFile04" aria-describedby="inputGroupFileAddon04" aria-label="Upload">
-            <button class="btn btn-outline-secondary" type="submit" id="inputGroupFileAddon04">Загрузить</button>
+        <div style="display: flex; justify-content: space-between;">
+            <div style="width: 40%;">
+                <p style="margin-top: 5px;">Шаблон</p>
+                <input type="file" style="margin-top: 5px;" class="form-control" name="mainfile" id="inputGroupFile04" aria-describedby="inputGroupFileAddon04" aria-label="Upload">
+            </div>
+            <div style="width: 40%;">
+                <p style="margin-top: 5px;">Ключ и подпись (Скачайте нашу программу)</p>
+                <input type="file" class="form-control" name="keyfile" id="inputGroupFile04" aria-describedby="inputGroupFileAddon04" aria-label="Upload">
+                <input type="file" style="margin-top: 10px;" class="form-control" name="signfile" id="inputGroupFile04" aria-describedby="inputGroupFileAddon04" aria-label="Upload">
+            </div>
         </div>
+            <button class="btn btn-outline-secondary" type="submit" id="inputGroupFileAddon04" style="margin-top: 5px;">Загрузить</button>
 </form>
+{% endif %}
 {% endblock %}

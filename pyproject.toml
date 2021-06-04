@@ -7,6 +7,9 @@ authors = ["Nickolsky <romb.intu@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.9"
 Flask = "^2.0.1"
+Flask-Login = "^0.5.0"
+Werkzeug = "^2.0.1"
+pycryptodome = "^3.10.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
